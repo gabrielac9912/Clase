@@ -1,360 +1,590 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- ... (mismo head que antes) ... -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced PurpleAir PM2.5 Correction Model</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           ESTILOS CSS - Diseño Profesional
+           ═══════════════════════════════════════════════════════════════ */
+        
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #27ae60;
+            --warning-color: #e74c3c;
+            --light-bg: #ecf0f1;
+            --dark-bg: #1a252f;
+            --text-color: #333;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+        }
+
+        /* Header / Hero Section */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-bg));
+            color: var(--white);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            animation: fadeInDown 1s ease;
+        }
+
+        header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        header .badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        header .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Navegación */
+        nav {
+            background: var(--white);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: var(--secondary-color);
+            color: var(--white);
+        }
+
+        /* Contenedor Principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Secciones */
+        section {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        section h2 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        section h2 i {
+            color: var(--secondary-color);
+        }
+
+        /* Tarjetas de Mejoras */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tablas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            display: block;
+        }
+
+        table thead {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        table th, table td {
+            padding: 1rem;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        table tbody tr:hover {
+            background: var(--light-bg);
+        }
+
+        /* Métricas destacadas */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--accent-color), #2ecc71);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .metric-card .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Botones */
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-color);
+        }
+
+        .btn-success {
+            background: var(--accent-color);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-outline {
+            border: 2px solid var(--secondary-color);
+            color: var(--secondary-color);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: var(--secondary-color);
+            color: var(--white);
+        }
+
+        /* Código */
+        pre {
+            background: var(--dark-bg);
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .inline-code {
+            background: var(--light-bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: var(--warning-color);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark-bg);
+            color: var(--white);
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        footer a {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Animaciones */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        section {
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            table th, table td {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: var(--secondary-color);
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-color: var(--warning-color);
+            color: #856404;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: var(--accent-color);
+            color: #155724;
+        }
+    </style>
 </head>
 <body>
-    <!-- ... (mismo header y nav que antes) ... -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         HEADER / HERO SECTION
+         ═══════════════════════════════════════════════════════════════ -->
+    <header>
+        <h1><i class="fas fa-cloud"></i> Enhanced PurpleAir PM2.5 Correction</h1>
+        <p class="subtitle">
+            Mejoras al modelo de corrección Barkjohn et al. (2021) para sensores PurpleAir
+        </p>
+        <div class="badges">
+            <span class="badge"><i class="fas fa-code"></i> Open Source</span>
+            <span class="badge"><i class="fas fa-python"></i> Python 3.10+</span>
+            <span class="badge"><i class="fas fa-book"></i> Article</span>
+            <span class="badge"><i class="fas fa-robot"></i> Machine Learning</span>
+        </div>
+        <div style="margin-top: 2rem;">
+            <a href="https://github.com/TU_USUARIO/purpleair-correction-enhanced" class="btn btn-success">
+                <i class="fab fa-github"></i> Ver en GitHub
+            </a>
+            <a href="article.pdf" class="btn btn-outline" style="border-color: white; color: white;">
+                <i class="fas fa-file-pdf"></i> Descargar PDF
+            </a>
+        </div>
+    </header>
 
+    <!-- ═══════════════════════════════════════════════════════════════
+         NAVEGACIÓN
+         ═══════════════════════════════════════════════════════════════ -->
+    <nav>
+        <ul>
+            <li><a href="#inicio"><i class="fas fa-home"></i> Inicio</a></li>
+            <li><a href="#mejoras"><i class="fas fa-star"></i> Mejoras</a></li>
+            <li><a href="#resultados"><i class="fas fa-chart-bar"></i> Resultados</a></li>
+            <li><a href="#metodologia"><i class="fas fa-flask"></i> Metodología</a></li>
+            <li><a href="#uso"><i class="fas fa-code"></i> Uso</a></li>
+            <li><a href="#cita"><i class="fas fa-quote-left"></i> Citar</a></li>
+        </ul>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         CONTENIDO PRINCIPAL
+         ═══════════════════════════════════════════════════════════════ -->
     <div class="container" id="inicio">
         
-        <!-- ... (misma sección de descripción que antes) ... -->
-        <!-- ... (misma sección de mejoras que antes) ... -->
-        
-        <!-- NUEVA SECCIÓN: Visualizaciones -->
-        <section id="visualizaciones">
-            <h2><i class="fas fa-chart-area"></i> Visualizaciones de Resultados</h2>
-            
-            <h3>Comparación de Métodos de Corrección</h3>
-            <div style="text-align: center; margin: 2rem 0;">
-                <img src="images/comparacion_metodos.png" 
-                     alt="Comparación de Métodos" 
-                     style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <p style="margin-top: 1rem; font-style: italic; color: #666;">
-                    Figura 1: Comparación de RMSE y R² entre los diferentes métodos de corrección. 
-                    El modelo de Machine Learning muestra el mejor desempeño.
-                </p>
-            </div>
-
-            <h3>Scatter Plot: Referencia vs Predicciones</h3>
-            <div style="text-align: center; margin: 2rem 0;">
-                <img src="images/scatter_plot.png" 
-                     alt="Scatter Plot" 
-                     style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <p style="margin-top: 1rem; font-style: italic; color: #666;">
-                    Figura 2: Comparación entre valores de referencia FRM/FEM y predicciones de los modelos 
-                    Barkjohn y Machine Learning.
-                </p>
-            </div>
-
-            <h3>Error por Rango de Humedad Relativa</h3>
-            <div style="text-align: center; margin: 2rem 0;">
-                <img src="images/error_por_rh.png" 
-                     alt="Error por RH" 
-                     style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <p style="margin-top: 1rem; font-style: italic; color: #666;">
-                    Figura 3: Bias medio por rango de humedad relativa. El modelo ML mantiene bias cercano 
-                    a cero incluso en alta humedad.
-                </p>
-            </div>
-
-            <h3>Desempeño por Región Climática</h3>
-            <div style="text-align: center; margin: 2rem 0;">
-                <img src="images/desempeno_regional.png" 
-                     alt="Desempeño Regional" 
-                     style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <p style="margin-top: 1rem; font-style: italic; color: #666;">
-                    Figura 4: RMSE por región climática. Las mejoras son consistentes en todas las regiones.
-                </p>
-            </div>
-
-            <h3>Resumen de Métricas</h3>
-            <div style="text-align: center; margin: 2rem 0;">
-                <img src="images/metricas_resumen.png" 
-                     alt="Métricas Resumen" 
-                     style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <p style="margin-top: 1rem; font-style: italic; color: #666;">
-                    Figura 5: Resumen comparativo de métricas de desempeño y porcentaje de mejora.
-                </p>
+        <!-- Descripción -->
+        <section>
+            <h2><i class="fas fa-info-circle"></i> Descripción del Proyecto</h2>
+            <p>
+                Este proyecto implementa mejoras metodológicas al modelo de corrección de 
+                <strong>Barkjohn et al. (2021)</strong> para datos de PM2.5 colectados con sensores 
+                <strong>PurpleAir</strong>. Las mejoras incluyen corrección de bias en el sensor de 
+                humedad, modelado no-lineal para alta humedad relativa, coeficientes adaptativos por 
+                región/temporada, y un enfoque de machine learning.
+            </p>
+            <div class="alert alert-info">
+                <i class="fas fa-lightbulb"></i> 
+                <strong>Impacto:</strong> Reducción del 79.5% en RMSE comparado con el modelo original
             </div>
         </section>
 
-        <!-- NUEVA SECCIÓN: Discusión Ampliada -->
-        <section id="discusion">
-            <h2><i class="fas fa-comments"></i> Discusión</h2>
+        <!-- Mejoras -->
+        <section id="mejoras">
+            <h2><i class="fas fa-star"></i> Mejoras Implementadas</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-sliders-h"></i>
+                    <h3>Corrección de Bias en RH</h3>
+                    <p>Compensa error del sensor BME280 (10-20% subestimación)</p>
+                    <strong>~15% reducción de error</strong>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Modelo No-Lineal</h3>
+                    <p>Captura crecimiento higroscópico exponencial (RH > 50%)</p>
+                    <strong>~70% reducción de bias</strong>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-globe"></i>
+                    <h3>Coeficientes Adaptativos</h3>
+                    <p>Modelos específicos por región y temporada</p>
+                    <strong>Mejora consistencia regional</strong>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-robot"></i>
+                    <h3>Machine Learning</h3>
+                    <p>Gradient Boosting con features ingenierizadas</p>
+                    <strong>R² = 0.983</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resultados -->
+        <section id="resultados">
+            <h2><i class="fas fa-chart-bar"></i> Resultados Principales</h2>
             
-            <h3>4.1 Implicaciones de las Mejoras Implementadas</h3>
-            
-            <div class="alert alert-info">
-                <i class="fas fa-lightbulb"></i> 
-                <strong>Corrección del Sensor de RH:</strong> Nuestros resultados confirman que el sesgo del 
-                sensor BME280 es una fuente significativa de error en la corrección de PM2.5. La subestimación 
-                de RH de 10-20 puntos porcentuales conduce a una corrección insuficiente del crecimiento 
-                higroscópico.
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="value">0.983</span>
+                    <span class="label">R² (ML Model)</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">0.73</span>
+                    <span class="label">RMSE (µg/m³)</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">79.5%</span>
+                    <span class="label">Reducción de Error</span>
+                </div>
+                <div class="metric-card">
+                    <span class="value">3000</span>
+                    <span class="label">Observaciones</span>
+                </div>
             </div>
 
-            <h4>Recomendación práctica:</h4>
-            <p>
-                Los usuarios deberían aplicar una corrección de RH antes de usar cualquier ecuación de 
-                corrección de PM2.5, especialmente en regiones húmedas donde el error puede superar el 15%.
-            </p>
-
-            <h4>No-linealidad en Alta Humedad</h4>
-            <p>
-                La mejora más significativa se observa en rangos de RH > 50%, donde el crecimiento 
-                higroscópico de partículas se vuelve exponencial. El modelo lineal de Barkjohn no captura 
-                esta dinámica, llevando a errores sistemáticos crecientes que pueden alcanzar 5 µg/m³ en 
-                condiciones de RH > 90%.
-            </p>
-
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                <strong>Implicación para salud pública:</strong> Durante eventos de alta humedad (tormentas, 
-                temporadas de monzón), las lecturas no corregidas o corregidas con modelo lineal pueden llevar 
-                a alertas de calidad del aire falsamente elevadas.
-            </div>
-
-            <h4>Modelo Adaptativo vs. Machine Learning</h4>
-            <p>
-                Sorprendentemente, el modelo ML superó al modelo adaptativo paramétrico a pesar de este último 
-                estar específicamente calibrado por región/temporada. Esto sugiere que:
-            </p>
-            <ul style="margin: 1rem 0 1rem 2rem;">
-                <li>Las relaciones no-lineales capturadas por ML son más importantes que la estratificación regional</li>
-                <li>El modelo adaptativo puede sufrir de overfitting con datasets limitados por celda región-temporada</li>
-                <li>ML generaliza mejor a condiciones no vistas durante el entrenamiento</li>
-            </ul>
-
-            <h3>4.2 Comparación con Estudios Relacionados</h3>
+            <h3>Comparación de Métodos</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Estudio</th>
-                        <th>Región</th>
+                        <th>Método</th>
+                        <th>R²</th>
                         <th>RMSE (µg/m³)</th>
-                        <th>Mejora vs Barkjohn</th>
+                        <th>MAE (µg/m³)</th>
+                        <th>Bias Medio</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Barkjohn et al. (2021)</td>
-                        <td>EE.UU. nacional</td>
-                        <td>3.0</td>
-                        <td>—</td>
+                        <td>Sin corrección</td>
+                        <td>-0.302</td>
+                        <td>6.393</td>
+                        <td>5.102</td>
+                        <td>5.037</td>
                     </tr>
                     <tr>
-                        <td>Tryner et al. (2020)</td>
-                        <td>Colorado</td>
-                        <td>2.5</td>
-                        <td>17%</td>
-                    </tr>
-                    <tr>
-                        <td>Bi et al. (2021)</td>
-                        <td>California</td>
-                        <td>2.8</td>
-                        <td>7%</td>
+                        <td>Barkjohn Original</td>
+                        <td>0.601</td>
+                        <td>3.540</td>
+                        <td>3.286</td>
+                        <td>3.266</td>
                     </tr>
                     <tr style="background: #d4edda;">
-                        <td><strong>Este estudio (ML)</strong></td>
-                        <td><strong>EE.UU. nacional</strong></td>
-                        <td><strong>0.73</strong></td>
-                        <td><strong>76%</strong></td>
+                        <td><strong>No-Lineal (Propuesto)</strong></td>
+                        <td><strong>0.834</strong></td>
+                        <td><strong>2.286</strong></td>
+                        <td><strong>1.674</strong></td>
+                        <td><strong>0.811</strong></td>
+                    </tr>
+                    <tr style="background: #d4edda;">
+                        <td><strong>Machine Learning</strong></td>
+                        <td><strong>0.983</strong></td>
+                        <td><strong>0.729</strong></td>
+                        <td><strong>0.569</strong></td>
+                        <td><strong>0.013</strong></td>
                     </tr>
                 </tbody>
             </table>
-            <p style="font-size: 0.9rem; font-style: italic; color: #666;">
-                *Nuestra mejora aparente es mayor debido a la naturaleza sintética del dataset; se espera 
-                40-60% de mejora con datos reales.
-            </p>
         </section>
 
-        <!-- NUEVA SECCIÓN: Limitaciones Detalladas -->
-        <section id="limitaciones">
-            <h2><i class="fas fa-exclamation-triangle"></i> Limitaciones del Estudio</h2>
+        <!-- Metodología -->
+        <section id="metodologia">
+            <h2><i class="fas fa-flask"></i> Metodología</h2>
             
-            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                <div class="feature-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
-                    <i class="fas fa-database"></i>
-                    <h3>Datos Sintéticos</h3>
-                    <p>
-                        Este estudio utilizó datos sintéticos basados en parámetros empíricos de literatura. 
-                        Si bien esto permite demostrar la metodología, los coeficientes finales deben ser 
-                        recalibrados con datos reales de colocalización PurpleAir-FRM.
-                    </p>
-                    <strong style="display: block; margin-top: 1rem;">
-                        Trabajo futuro: Validar con ≥50 sitios colocalizados
-                    </strong>
-                </div>
+            <h3>Ecuación Original (Barkjohn et al., 2021)</h3>
+            <pre><code>PM2.5_corregido = 5.72 + 0.524 × PM2.5_crudo - 0.0852 × RH</code></pre>
 
-                <div class="feature-card" style="background: linear-gradient(135deg, #f39c12, #d68910);">
-                    <i class="fas fa-clock"></i>
-                    <h3>Deriva del Sensor</h3>
-                    <p>
-                        No evaluamos la deriva temporal del sensor PurpleAir, la cual puede requerir 
-                        recalibración periódica de los coeficientes cada 6-12 meses según Tryner et al. (2020).
-                    </p>
-                    <strong style="display: block; margin-top: 1rem;">
-                        Recomendación: Monitoreo continuo de calidad
-                    </strong>
-                </div>
+            <h3>Mejora 1: Corrección de Bias en RH</h3>
+            <pre><code>RH_corregida = RH_reportada + δ_región</code></pre>
+            <p>Donde δ_región varía de 10-18 puntos según clima.</p>
 
-                <div class="feature-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
-                    <i class="fas fa-vial"></i>
-                    <h3>Composición de Aerosoles</h3>
-                    <p>
-                        El modelo no considera diferencias en composición química de aerosoles (polvo mineral, 
-                        sulfatos, carbono orgánico, humo de incendios), las cuales afectan la respuesta óptica 
-                        del sensor.
-                    </p>
-                    <strong style="display: block; margin-top: 1rem;">
-                        Limitación: Modelo generalista
-                    </strong>
-                </div>
+            <h3>Mejora 2: Modelo No-Lineal</h3>
+            <pre><code>PM2.5 = β₀ + β₁×PM_crudo - β₂×RH_corr - β₃×(RH_corr - 50)^1.8×PM_crudo</code></pre>
+            <p>Activado cuando RH > 50%.</p>
 
-                <div class="feature-card" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
-                    <i class="fas fa-globe-americas"></i>
-                    <h3>Representatividad Geográfica</h3>
-                    <p>
-                        Aunque mejoramos la distribución regional respecto al estudio original, el sureste 
-                        húmedo permanece subrepresentado con solo 10% del dataset.
-                    </p>
-                    <strong style="display: block; margin-top: 1rem;">
-                        Necesidad: Más sitios en climas tropicales
-                    </strong>
-                </div>
-            </div>
-        </section>
-
-        <!-- NUEVA SECCIÓN: Recomendaciones -->
-        <section id="recomendaciones">
-            <h2><i class="fas fa-clipboard-check"></i> Recomendaciones para Implementación</h2>
-            
-            <h3>Para Agencias Regulatorias</h3>
-            <div class="alert alert-info">
-                <ol style="margin: 0 0 0 1.5rem;">
-                    <li><strong>Adoptar corrección de RH:</strong> Implementar corrección del sesgo del sensor 
-                    BME280 en todos los datos PurpleAir procesados</li>
-                    <li><strong>Validación local:</strong> Realizar colocalización mínima de 3 meses antes de 
-                    desplegar correcciones regionalizadas</li>
-                    <li><strong>Monitoreo de calidad:</strong> Implementar alertas automáticas cuando RH > 90% 
-                    (datos de baja confianza)</li>
-                </ol>
-            </div>
-
-            <h3>Para Investigadores</h3>
-            <div class="alert alert-success">
-                <ul style="margin: 0 0 0 1.5rem;">
-                    <li><strong>Transparencia:</strong> Publicar código y coeficientes en repositorios abiertos</li>
-                    <li><strong>Documentación:</strong> Registrar versión del modelo aplicado para reproducibilidad</li>
-                    <li><strong>Actualización:</strong> Recalibrar coeficientes anualmente o después de cambios 
-                    de firmware del sensor</li>
-                </ul>
-            </div>
-
-            <h3>Para Usuarios del Público</h3>
             <div class="alert alert-warning">
-                <ul style="margin: 0 0 0 1.5rem;">
-                    <li><strong>Interpretación cautelosa:</strong> Datos en RH > 80% tienen mayor incertidumbre</li>
-                    <li><strong>Fuentes múltiples:</strong> Complementar con datos de AirNow para decisiones de salud</li>
-                    <li><strong>Actualizaciones:</strong> Verificar que la plataforma usada aplica la corrección 
-                    más reciente</li>
-                </ul>
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Nota:</strong> Los coeficientes deben recalibrarse con datos reales de colocalización PurpleAir-FRM antes de uso operacional.
             </div>
         </section>
 
-        <!-- NUEVA SECCIÓN: Conclusiones Ampliadas -->
-        <section id="conclusiones">
-            <h2><i class="fas fa-flag-checkered"></i> Conclusiones</h2>
-            
-            <p style="font-size: 1.1rem; line-height: 1.8;">
-                Este estudio presenta mejoras significativas al modelo de corrección de Barkjohn et al. (2021) 
-                para datos PM2.5 de sensores PurpleAir. Las principales contribuciones son:
-            </p>
-
-            <div class="metrics-grid" style="margin-top: 2rem;">
-                <div class="metric-card" style="background: linear-gradient(135deg, #3498db, #2980b9);">
-                    <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                    <span class="value" style="font-size: 1.2rem;">Corrección de RH</span>
-                    <span class="label">Compensa error del BME280<br>Reducción ~15% en error</span>
-                </div>
-                <div class="metric-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
-                    <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                    <span class="value" style="font-size: 1.2rem;">Modelo No-Lineal</span>
-                    <span class="label">Captura crecimiento higroscópico<br>Reducción ~70% en bias húmedo</span>
-                </div>
-                <div class="metric-card" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
-                    <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                    <span class="value" style="font-size: 1.2rem;">Framework Adaptativo</span>
-                    <span class="label">Coeficientes regionalizados<br>Mejora consistencia</span>
-                </div>
-                <div class="metric-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
-                    <i class="fas fa-trophy" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                    <span class="value" style="font-size: 1.2rem;">Machine Learning</span>
-                    <span class="label">R² = 0.983<br>RMSE = 0.73 µg/m³</span>
-                </div>
-            </div>
-
-            <div class="alert alert-success" style="margin-top: 2rem;">
-                <h4 style="margin-top: 0;"><i class="fas fa-lightbulb"></i> Recomendación Final</h4>
-                <p style="margin-bottom: 0;">
-                    Para aplicaciones operacionales, recomendamos el <strong>modelo no-lineal con corrección 
-                    de RH</strong> como equilibrio óptimo entre precisión y complejidad computacional. El 
-                    modelo <strong>ML</strong> debería usarse cuando haya recursos para entrenamiento y 
-                    validación continua.
-                </p>
-            </div>
-
-            <h3>Próximos Pasos</h3>
-            <ul style="margin: 1rem 0 1rem 2rem; line-height: 2;">
-                <li>Validación con datos reales de colocalización en al menos <strong>50 sitios</strong> 
-                distribuidos en todas las regiones climáticas de EE.UU.</li>
-                <li>Seguimiento de deriva del sensor por <strong>24 meses</strong></li>
-                <li>Incorporación de variables de composición de aerosoles</li>
-                <li>Desarrollo de correcciones específicas para eventos de humo de incendios forestales</li>
-            </ul>
-        </section>
-
-        <!-- NUEVA SECCIÓN: Referencias -->
-        <section id="referencias">
-            <h2><i class="fas fa-book"></i> Referencias</h2>
-            <ol style="line-height: 2;">
-                <li>Barkjohn, K. K., Gantt, B., & Clements, A. L. (2021). Development and application of a 
-                United States-wide correction for PM2.5 data collected with the PurpleAir sensor. 
-                <em>Atmospheric Measurement Techniques</em>, 14(6), 4617-4637. 
-                <a href="https://doi.org/10.5194/amt-14-4617-2021" target="_blank">DOI</a></li>
-                
-                <li>Bi, J., et al. (2021). Performance of low-cost PM2.5 sensors in California during wildfire 
-                events. <em>Environmental Science & Technology</em>, 55(12), 8345-8355.</li>
-                
-                <li>Delp, W. W., & Singer, B. C. (2020). Performance assessment of thirty-one commercial PM2.5 
-                sensors. <em>Building and Environment</em>, 174, 106716.</li>
-                
-                <li>Holden, A. S., et al. (2022). Characterizing the bias in relative humidity sensors on 
-                low-cost air quality monitors. <em>Atmospheric Environment</em>, 268, 118799.</li>
-                
-                <li>Holder, A. L., et al. (2020). Collocation of low-cost sensors with regulatory monitors for 
-                PM2.5. <em>EPA Report</em>, EPA/600/R-20/XXX.</li>
-                
-                <li>Malings, C., et al. (2020). Fine particle mass concentration sensing in high humidity 
-                conditions. <em>Atmospheric Measurement Techniques</em>, 13(4), 1963-1977.</li>
-                
-                <li>Tryner, J., et al. (2020). The effects of temperature, humidity, and time on the performance 
-                of low-cost PM2.5 sensors. <em>Atmospheric Environment</em>, 244, 117936.</li>
-            </ol>
-        </section>
-
-        <!-- MISMA SECCIÓN DE USO (simplificada) -->
+        <!-- Uso -->
         <section id="uso">
             <h2><i class="fas fa-code"></i> Uso Rápido</h2>
+            
+            <h3>Instalación</h3>
             <pre><code>git clone https://github.com/TU_USUARIO/purpleair-correction-enhanced.git
 cd purpleair-correction-enhanced
 pip install -r requirements.txt</code></pre>
+
+            <h3>Ejemplo de Código</h3>
             <pre><code>from src.correction_models import apply_advanced_correction
 
 resultado = apply_advanced_correction(
-    pm25_raw=25.3,
-    rh_reported=45,
-    region='Sur_humedo',
-    season='Verano',
-    method='nonlinear'
+    pm25_raw=25.3,           # Lectura cruda (µg/m³)
+    rh_reported=45,          # Humedad (%)
+    region='Sur_humedo',     # Región climática
+    season='Verano',         # Temporada
+    method='nonlinear'       # Método de corrección
 )
 
 print(f"PM2.5 corregido: {resultado:.2f} µg/m³")</code></pre>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="https://github.com/TU_USUARIO/purpleair-correction-enhanced" class="btn btn-primary">
+                    <i class="fab fa-github"></i> Ver Código Completo
+                </a>
+                <a href="notebooks/01_model_training.ipynb" class="btn btn-outline">
+                    <i class="fas fa-book"></i> Abrir Notebook
+                </a>
+            </div>
         </section>
 
-        <!-- MISMA SECCIÓN DE CITAR -->
+        <!-- Citar -->
         <section id="cita">
             <h2><i class="fas fa-quote-left"></i> Cómo Citar</h2>
+            
+            <h3>BibTeX</h3>
             <pre><code>@article{tuapellido2024purpleair,
   title={Enhanced PurpleAir PM2.5 Correction Model},
   author={Tu Apellido, Tu Nombre},
@@ -363,11 +593,61 @@ print(f"PM2.5 corregido: {resultado:.2f} µg/m³")</code></pre>
   doi={10.5281/zenodo.XXXXXX},
   url={https://github.com/TU_USUARIO/purpleair-correction-enhanced}
 }</code></pre>
+
+            <h3>APA</h3>
+            <pre><code>Tu Apellido, T. (2024). Enhanced PurpleAir PM2.5 Correction Model. 
+Atmospheric Measurement Techniques (Propuesta). 
+https://doi.org/10.5281/zenodo.XXXXXX</code></pre>
+        </section>
+
+        <!-- Limitaciones -->
+        <section>
+            <h2><i class="fas fa-exclamation-circle"></i> Limitaciones</h2>
+            <div class="alert alert-warning">
+                <ul>
+                    <li><strong>Datos sintéticos:</strong> Este estudio utiliza datos simulados. Validar con datos reales.</li>
+                    <li><strong>Deriva del sensor:</strong> Recalibrar coeficientes cada 6-12 meses.</li>
+                    <li><strong>Alta humedad:</strong> Para RH > 90%, considerar datos como "baja confianza".</li>
+                    <li><strong>Composición de aerosoles:</strong> El modelo no considera diferencias químicas.</li>
+                </ul>
+            </div>
         </section>
 
     </div>
 
-    <!-- ... (mismo footer que antes) ... -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════════ -->
+    <footer>
+        <p>
+            <i class="fas fa-code"></i> Desarrollado con ❤️ para la comunidad científica
+        </p>
+        <p>
+            <a href="https://github.com/TU_USUARIO/purpleair-correction-enhanced">
+                <i class="fab fa-github"></i> GitHub Repository
+            </a> |
+            <a href="article.pdf">
+                <i class="fas fa-file-pdf"></i> Artículo PDF
+            </a> |
+            <a href="mailto:tu.email@institucion.edu">
+                <i class="fas fa-envelope"></i> Contacto
+            </a>
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+            © 2024 Enhanced PurpleAir Correction Project. Licencia MIT.
+        </p>
+    </footer>
+
+    <!-- Script para scroll suave -->
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
 </body>
-</html>
 </html>
